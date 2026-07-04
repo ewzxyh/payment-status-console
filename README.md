@@ -4,6 +4,8 @@ Payment Status Console is a focused operations dashboard for small groups that n
 
 The project is built as a modern Next.js application with signed admin sessions, persistent storage through Vercel Blob, optimistic UI updates, month-by-month payment tracking, and copy-ready exports for messaging groups.
 
+<img width="1663" height="953" alt="image" src="https://github.com/user-attachments/assets/c50e520f-b34e-4ba6-9e6b-8cd54549a1e8" />
+
 ## Why This Exists
 
 Many teams, clubs, classrooms, communities, and subscription groups still collect payments manually. The hard part is rarely the payment itself. The hard part is keeping a readable list of who has paid, who has not, which month is being reviewed, and what can safely be shared with the group.
@@ -31,6 +33,9 @@ Payment Status Console turns that recurring manual workflow into a small, depend
 - Edit member names and optional phone numbers.
 - Remove members across the full ledger.
 - Keep public views free of phone numbers while preserving them for admins.
+
+<img width="1657" height="952" alt="image" src="https://github.com/user-attachments/assets/ee5f93e8-8e89-4104-abdf-9f60a1465f54" />
+
 
 ### Public and Admin Experiences
 

@@ -1,5 +1,6 @@
 import "server-only"
-import { put, get } from "@vercel/blob"
+import { mkdir, readFile, writeFile } from "node:fs/promises"
+import { dirname, isAbsolute, join } from "node:path"
 import {
   normalizeStatus,
   seedMembers,
@@ -9,9 +10,14 @@ import {
 } from "@/lib/members"
 import { currentMonthKey } from "@/lib/month"
 
-const BLOB_PATH = "subscriptions/data.json"
+const DATA_FILE_PATH = process.env.DATA_FILE_PATH?.trim() || ".data/statuses.json"
 
-// Dados iniciais: roster semeado + um mês (mês atual) com status variados
+function dataFilePath(): string {
+  return isAbsolute(DATA_FILE_PATH)
+    ? DATA_FILE_PATH
+    : join(/*turbopackIgnore: true*/ process.cwd(), DATA_FILE_PATH)
+}
+
 function seedData(): AppData {
   return {
     members: seedMembers,
@@ -34,13 +40,9 @@ function normalizeMonths(months: unknown): AppData["months"] {
   return clean
 }
 
-// Lê os dados salvos no Blob (store privado). Retorna dados semeados se não existir.
 export async function getData(): Promise<AppData> {
   try {
-    const result = await get(BLOB_PATH, { access: "private" })
-    if (!result) return seedData()
-
-    const text = await new Response(result.stream).text()
+    const text = await readFile(dataFilePath(), "utf8")
     if (!text) return seedData()
 
     const parsed = JSON.parse(text) as Partial<AppData>
@@ -48,18 +50,15 @@ export async function getData(): Promise<AppData> {
       members: Array.isArray(parsed.members) ? parsed.members : seedMembers,
       months: normalizeMonths(parsed.months),
     }
-  } catch (error) {
-    console.error("Erro ao ler dados do Blob:", error)
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return seedData()
+    console.error("Erro ao ler dados salvos:", error)
     return seedData()
   }
 }
 
-// Salva os dados no Blob, sobrescrevendo o arquivo existente.
 export async function saveData(data: AppData): Promise<void> {
-  await put(BLOB_PATH, JSON.stringify(data), {
-    access: "private",
-    contentType: "application/json",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-  })
+  const file = dataFilePath()
+  await mkdir(dirname(file), { recursive: true })
+  await writeFile(file, JSON.stringify(data, null, 2), "utf8")
 }

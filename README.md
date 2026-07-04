@@ -2,7 +2,7 @@
 
 Payment Status Console is a focused operations dashboard for small groups that need a clear, shared source of truth for recurring manual payments. It gives administrators a fast monthly ledger, while public viewers get a clean read-only payment status page without access to private contact data.
 
-The project is built as a modern Next.js application with signed admin sessions, persistent storage through Vercel Blob, optimistic UI updates, month-by-month payment tracking, and copy-ready exports for messaging groups.
+The project is built as a modern Next.js application with signed admin sessions, file-backed persistence, optimistic UI updates, month-by-month payment tracking, and copy-ready exports for messaging groups.
 
 <img width="1663" height="953" alt="image" src="https://github.com/user-attachments/assets/c50e520f-b34e-4ba6-9e6b-8cd54549a1e8" />
 
@@ -54,7 +54,7 @@ Payment Status Console turns that recurring manual workflow into a small, depend
 
 ### Persistence
 
-- Data is saved as JSON in Vercel Blob.
+- Data is saved as JSON in a configurable server-side file.
 - The application seeds an initial roster when no saved data exists.
 - Stored legacy statuses are normalized so the interface stays stable as the status model evolves.
 
@@ -65,12 +65,11 @@ Payment Status Console turns that recurring manual workflow into a small, depend
 | Framework | Next.js App Router |
 | Runtime | React 19 |
 | Package manager | Bun |
-| Styling | Tailwind CSS, shadcn-compatible tokens |
+| Styling | Tailwind CSS and local design tokens |
 | Data fetching | SWR |
 | Icons | Lucide React |
-| Storage | Vercel Blob |
+| Storage | Server-side JSON file |
 | Auth | Signed HTTP-only cookies |
-| Analytics | Vercel Analytics |
 
 ## Architecture
 
@@ -95,7 +94,7 @@ lib/
   auth-token.ts            HMAC signed session token helpers
   members.ts               Member and status domain model
   month.ts                 Month key utilities
-  statuses.ts              Vercel Blob persistence
+  statuses.ts              File-backed persistence
 ```
 
 ## Getting Started
@@ -104,7 +103,7 @@ lib/
 
 - Bun 1.3 or newer
 - Node-compatible environment for Next.js
-- Vercel Blob token for persistent storage
+- Writable server-side storage path for persistent data
 
 ### Install
 
@@ -126,7 +125,7 @@ Fill in:
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=replace-with-a-strong-password
 SESSION_SECRET=replace-with-a-long-random-secret
-BLOB_READ_WRITE_TOKEN=vercel-blob-token
+DATA_FILE_PATH=.data/statuses.json
 ```
 
 `SESSION_SECRET` should be a long random value. It is used to sign admin session cookies.
@@ -226,14 +225,14 @@ Month keys use the `YYYY-MM` format.
 
 ## Deployment
 
-The app is designed for Vercel:
+The app can run anywhere that supports a Next.js server process and a writable data path:
 
-1. Create a Vercel Blob store.
+1. Choose a persistent server-side path for `DATA_FILE_PATH`.
 2. Add the required environment variables.
-3. Deploy the Next.js application.
+3. Build and start the Next.js application.
 4. Visit `/admin` and sign in with the configured credentials.
 
-Because data lives in Vercel Blob, the dashboard can be redeployed without losing the payment ledger.
+Because data lives outside the source tree, the dashboard can be redeployed without committing the payment ledger.
 
 ## Operational Workflow
 

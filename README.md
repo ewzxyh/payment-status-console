@@ -2,7 +2,7 @@
 
 Payment Status Console is a focused operations dashboard for small groups that need a clear, shared source of truth for recurring manual payments. It gives administrators a fast monthly ledger, while public viewers get a clean read-only payment status page without access to private contact data.
 
-The project is built as a modern Next.js application with signed admin sessions, file-backed persistence, optimistic UI updates, month-by-month payment tracking, and copy-ready exports for messaging groups.
+The project is built as a modern Next.js application with signed admin sessions, durable object storage in production, local file persistence in development, optimistic UI updates, month-by-month payment tracking, and copy-ready exports for messaging groups.
 
 <img width="1663" height="953" alt="image" src="https://github.com/user-attachments/assets/c50e520f-b34e-4ba6-9e6b-8cd54549a1e8" />
 
@@ -54,7 +54,8 @@ Payment Status Console turns that recurring manual workflow into a small, depend
 
 ### Persistence
 
-- Data is saved as JSON in a configurable server-side file.
+- Data is saved as JSON in durable object storage when `BLOB_READ_WRITE_TOKEN` is configured.
+- Local development can use a configurable server-side JSON file.
 - The application seeds an initial roster when no saved data exists.
 - Stored legacy statuses are normalized so the interface stays stable as the status model evolves.
 
@@ -68,7 +69,7 @@ Payment Status Console turns that recurring manual workflow into a small, depend
 | Styling | Tailwind CSS and local design tokens |
 | Data fetching | SWR |
 | Icons | Lucide React |
-| Storage | Server-side JSON file |
+| Storage | Durable object storage with local file fallback |
 | Auth | Signed HTTP-only cookies |
 
 ## Architecture
@@ -94,7 +95,7 @@ lib/
   auth-token.ts            HMAC signed session token helpers
   members.ts               Member and status domain model
   month.ts                 Month key utilities
-  statuses.ts              File-backed persistence
+  statuses.ts              Payment data persistence
 ```
 
 ## Getting Started
@@ -103,7 +104,8 @@ lib/
 
 - Bun 1.3 or newer
 - Node-compatible environment for Next.js
-- Writable server-side storage path for persistent data
+- Durable object storage token for production persistence
+- Writable server-side storage path for local development
 
 ### Install
 
@@ -125,6 +127,7 @@ Fill in:
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=replace-with-a-strong-password
 SESSION_SECRET=replace-with-a-long-random-secret
+BLOB_READ_WRITE_TOKEN=object-storage-token
 DATA_FILE_PATH=.data/statuses.json
 ```
 
@@ -225,14 +228,14 @@ Month keys use the `YYYY-MM` format.
 
 ## Deployment
 
-The app can run anywhere that supports a Next.js server process and a writable data path:
+The app can run anywhere that supports a Next.js server process:
 
-1. Choose a persistent server-side path for `DATA_FILE_PATH`.
-2. Add the required environment variables.
+1. Configure `BLOB_READ_WRITE_TOKEN` in production so payment data survives redeploys.
+2. Use `DATA_FILE_PATH` only for local development or servers with a real persistent volume.
 3. Build and start the Next.js application.
 4. Visit `/admin` and sign in with the configured credentials.
 
-Because data lives outside the source tree, the dashboard can be redeployed without committing the payment ledger.
+Because production data lives outside the source tree and runtime filesystem, the dashboard can be redeployed without resetting the payment ledger.
 
 ## Operational Workflow
 

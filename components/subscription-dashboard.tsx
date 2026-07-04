@@ -36,6 +36,7 @@ export function SubscriptionDashboard({ admin = false }: { admin?: boolean }) {
   const [query, setQuery] = useState("")
   const [filter, setFilter] = useState<Filter>("todos")
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState("")
   const [activeMonth, setActiveMonth] = useState<string>("")
   const [copyOpen, setCopyOpen] = useState(false)
   const [editor, setEditor] = useState<{ open: boolean; member: Member | null }>({
@@ -61,6 +62,7 @@ export function SubscriptionDashboard({ admin = false }: { admin?: boolean }) {
 
   async function persist(next: AppData) {
     setSaving(true)
+    setSaveError("")
     await mutate({ data: next }, { revalidate: false })
     try {
       const res = await fetch("/api/statuses", {
@@ -68,8 +70,12 @@ export function SubscriptionDashboard({ admin = false }: { admin?: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: next }),
       })
-      if (!res.ok) throw new Error("Falha ao salvar")
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error ?? "Falha ao salvar")
+      }
     } catch {
+      setSaveError("Não foi possível salvar. Verifique a configuração de produção.")
       await mutate()
     } finally {
       setSaving(false)
@@ -223,6 +229,9 @@ export function SubscriptionDashboard({ admin = false }: { admin?: boolean }) {
               <RefreshCw className="h-3 w-3 animate-spin" />
               Salvando...
             </span>
+          )}
+          {saveError && (
+            <span className="text-xs font-medium text-unpaid">{saveError}</span>
           )}
         </div>
       </header>

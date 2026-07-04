@@ -14,10 +14,18 @@ function publicData(data: AppData): AppData {
 }
 
 export async function GET() {
-  const data = await getData()
-  return NextResponse.json({
-    data: (await isAuthenticated()) ? data : publicData(data),
-  })
+  try {
+    const data = await getData()
+    return NextResponse.json({
+      data: (await isAuthenticated()) ? data : publicData(data),
+    })
+  } catch (error) {
+    console.error("Erro ao carregar dados:", error)
+    return NextResponse.json(
+      { error: "Nao foi possivel carregar os dados." },
+      { status: 500 },
+    )
+  }
 }
 
 export async function PUT(request: Request) {
@@ -66,6 +74,14 @@ export async function PUT(request: Request) {
   }
 
   const clean: AppData = { members, months }
-  await saveData(clean)
-  return NextResponse.json({ success: true, data: clean })
+  try {
+    await saveData(clean)
+    return NextResponse.json({ success: true, data: clean })
+  } catch (error) {
+    console.error("Erro ao salvar dados:", error)
+    return NextResponse.json(
+      { error: "Nao foi possivel salvar os dados." },
+      { status: 500 },
+    )
+  }
 }

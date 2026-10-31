@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Lock } from "lucide-react"
+import { oaTrack } from "@/lib/oa"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -24,6 +25,7 @@ export function LoginForm() {
         setError(data.error ?? "Não foi possível entrar.")
         return
       }
+      oaTrack("admin_login")
       window.location.href = "/admin"
     } catch {
       setError("Erro de conexão. Tente novamente.")

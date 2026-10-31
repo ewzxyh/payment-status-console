@@ -32,7 +32,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} bg-background`}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        {process.env.NEXT_PUBLIC_OA_KEY && (
+          <script
+            async
+            src="https://c.analytics.ewzxyh.com/oa.js"
+            data-key={process.env.NEXT_PUBLIC_OA_KEY}
+            data-collector={process.env.NEXT_PUBLIC_OA_COLLECTOR ?? 'https://c.analytics.ewzxyh.com'}
+          />
+        )}
+        {children}
+      </body>
     </html>
   )
 }

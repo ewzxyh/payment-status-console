@@ -7,6 +7,7 @@ import {
   type AppData,
 } from "@/lib/members"
 import { monthLabel, sortMonthsDesc } from "@/lib/month"
+import { oaTrack } from "@/lib/oa"
 
 type Props = {
   data: AppData
@@ -48,6 +49,7 @@ export function CopyExport({ data, monthKeys, onClose }: Props) {
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
+      oaTrack("export_copied", { months: selected.length })
       setTimeout(() => setCopied(false), 2000)
     } catch {
       setCopied(false)

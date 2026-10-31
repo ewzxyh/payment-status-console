@@ -18,6 +18,7 @@ import { StatusSummary } from "@/components/status-summary"
 import { MonthBar } from "@/components/month-bar"
 import { CopyExport } from "@/components/copy-export"
 import { MemberEditor } from "@/components/member-editor"
+import { oaTrack } from "@/lib/oa"
 
 type Filter = PaymentStatus | "todos"
 
@@ -85,6 +86,7 @@ export function SubscriptionDashboard({ admin = false }: { admin?: boolean }) {
   function setStatus(id: string, status: PaymentStatus) {
     if (!month) return
     const nextMonth = { ...statusMap, [id]: status }
+    oaTrack("status_changed", { status })
     persist({ ...appData, months: { ...appData.months, [month]: nextMonth } })
   }
 

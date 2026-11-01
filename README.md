@@ -54,8 +54,8 @@ Payment Status Console turns that recurring manual workflow into a small, depend
 
 ### Persistence
 
-- Data is saved as JSON in durable object storage when `BLOB_READ_WRITE_TOKEN` is configured.
-- Local development can use a configurable server-side JSON file.
+- Data is saved as a server-side JSON file (`DATA_FILE_PATH`, default `.data/statuses.json`). In production that folder is a
+  persistent volume (Coolify: `/app/.data`).
 - The application seeds an initial roster when no saved data exists.
 - Stored legacy statuses are normalized so the interface stays stable as the status model evolves.
 
@@ -127,7 +127,6 @@ Fill in:
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=replace-with-a-strong-password
 SESSION_SECRET=replace-with-a-long-random-secret
-BLOB_READ_WRITE_TOKEN=object-storage-token
 DATA_FILE_PATH=.data/statuses.json
 ```
 
@@ -230,8 +229,8 @@ Month keys use the `YYYY-MM` format.
 
 The app can run anywhere that supports a Next.js server process:
 
-1. Configure `BLOB_READ_WRITE_TOKEN` in production so payment data survives redeploys.
-2. Use `DATA_FILE_PATH` only for local development or servers with a real persistent volume.
+1. Mount a persistent volume on the folder of `DATA_FILE_PATH` (default `/app/.data`) so payment data survives redeploys.
+2. Configure the admin credentials and `SESSION_SECRET`.
 3. Build and start the Next.js application.
 4. Visit `/admin` and sign in with the configured credentials.
 

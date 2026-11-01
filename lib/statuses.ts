@@ -1,5 +1,4 @@
 import "server-only"
-import { get, put } from "@vercel/blob"
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { dirname, isAbsolute, join } from "node:path"
 import {
@@ -11,12 +10,7 @@ import {
 } from "@/lib/members"
 import { currentMonthKey } from "@/lib/month"
 
-const BLOB_PATH = "subscriptions/data.json"
 const DATA_FILE_PATH = process.env.DATA_FILE_PATH?.trim() || ".data/statuses.json"
-
-function hasRemoteStore(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN)
-}
 
 function dataFilePath(): string {
   return isAbsolute(DATA_FILE_PATH)
@@ -53,17 +47,7 @@ function normalizeMonths(months: unknown): AppData["months"] {
   return clean
 }
 
-async function getRemoteData(): Promise<AppData> {
-  const result = await get(BLOB_PATH, { access: "private" })
-  if (!result) return seedData()
-
-  const text = await new Response(result.stream).text()
-  if (!text) return seedData()
-
-  return normalizeData(JSON.parse(text) as Partial<AppData>)
-}
-
-async function getFileData(): Promise<AppData> {
+export async function getData(): Promise<AppData> {
   try {
     const text = await readFile(dataFilePath(), "utf8")
     if (!text) return seedData()
@@ -74,21 +58,7 @@ async function getFileData(): Promise<AppData> {
   }
 }
 
-export async function getData(): Promise<AppData> {
-  return hasRemoteStore() ? getRemoteData() : getFileData()
-}
-
 export async function saveData(data: AppData): Promise<void> {
-  if (hasRemoteStore()) {
-    await put(BLOB_PATH, JSON.stringify(data), {
-      access: "private",
-      contentType: "application/json",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-    })
-    return
-  }
-
   const file = dataFilePath()
   await mkdir(dirname(file), { recursive: true })
   await writeFile(file, JSON.stringify(data, null, 2), "utf8")

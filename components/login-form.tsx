@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useState } from "react"
 import { Lock } from "lucide-react"
 import { oaTrack } from "@/lib/oa"
@@ -96,12 +97,12 @@ export function LoginForm() {
         </form>
 
         <div className="mt-4 text-center">
-          <a
+          <Link
             href="/"
             className="text-xs font-medium text-muted-foreground underline-offset-4 hover:underline"
           >
             Voltar para a visualização
-          </a>
+          </Link>
         </div>
       </div>
     </main>
